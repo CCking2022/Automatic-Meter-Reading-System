@@ -3,6 +3,18 @@ import cv2
 from PIL import Image, ImageDraw, ImageFont, ImageChops
 from sympy.geometry import Point, Line, Circle
 import os
+import torch
+from torchvision import transforms
+import requests
+from io import BytesIO
+
+# 下载YOLOv5模型（如果未下载）
+if not os.path.exists('yolov5'):
+    os.system('git clone https://github.com/ultralytics/yolov5')
+    os.system('pip install -r yolov5/requirements.txt')
+
+# 加载YOLOv5模型
+model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
 
 def read_image_safely(filepath):
     """
@@ -28,6 +40,10 @@ def process_image(filepath):
 
     org = cv2.cvtColor(org, cv2.COLOR_RGB2BGR)  # 原图
     cv2.imshow("org", org)
+
+    # 使用YOLOv5进行目标检测
+    results = model(org)
+    detected_objects = results.pandas().xyxy[0]
 
     # 处理指针图像
     try:
@@ -134,10 +150,13 @@ def process_image(filepath):
     else:
         print("未检测到圆")
 
+    # 显示YOLOv5检测结果
+    result_img = results.render()[0]
+    cv2.imshow('YOLOv5 Detection', result_img)
+
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
 if __name__ == "__main__":
     filepath = "0.jpg"
     process_image(filepath)
-
