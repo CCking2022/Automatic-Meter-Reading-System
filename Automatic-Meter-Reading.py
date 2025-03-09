@@ -140,3 +140,4 @@ def process_image(filepath):
 if __name__ == "__main__":
     filepath = "0.jpg"
     process_image(filepath)
+
